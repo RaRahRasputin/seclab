@@ -1,0 +1,196 @@
+{
+  "name": "mini",
+  "type": "clab",
+  "clab": {
+    "config": {
+      "prefix": "",
+      "mgmt": {
+        "network": "mini-oob",
+        "bridge": "br-c80ca45766ac",
+        "ipv4-subnet": "172.31.254.0/24",
+        "ipv4-gw": "172.31.254.1",
+        "external-access": true,
+        "ipam": {
+          "provider": "containerlab"
+        }
+      }
+    }
+  },
+  "ssh-pub-keys": ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINtptCi7Ij9AhCRXoQbq+dBtkWGbveZIkOU5fRxBRbLp"],
+  "nodes": {
+    "h1": {
+      "index": "0",
+      "shortname": "h1",
+      "longname": "h1",
+      "fqdn": "h1.mini.io",
+      "group": "",
+      "labdir": "/home/raahatpathak/seclab/mini/clab-mini/h1",
+      "kind": "linux",
+      "image": "seclab/client:1",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "",
+      "mgmt-ipv4-prefix-length": 0,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-c80ca45766ac",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/home/raahatpathak/seclab/mini/clab-mini/h1",
+        "clab-node-longname": "h1",
+        "clab-node-name": "h1",
+        "clab-node-type": "",
+        "clab-owner": "raahatpathak",
+        "clab-topo-file": "/home/raahatpathak/seclab/mini/mini.clab.yml",
+        "containerlab": "mini"
+      },
+      "port-bindings": [
+      ]
+    },
+    "h2": {
+      "index": "1",
+      "shortname": "h2",
+      "longname": "h2",
+      "fqdn": "h2.mini.io",
+      "group": "",
+      "labdir": "/home/raahatpathak/seclab/mini/clab-mini/h2",
+      "kind": "linux",
+      "image": "seclab/client:1",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "",
+      "mgmt-ipv4-prefix-length": 0,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-c80ca45766ac",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/home/raahatpathak/seclab/mini/clab-mini/h2",
+        "clab-node-longname": "h2",
+        "clab-node-name": "h2",
+        "clab-node-type": "",
+        "clab-owner": "raahatpathak",
+        "clab-topo-file": "/home/raahatpathak/seclab/mini/mini.clab.yml",
+        "containerlab": "mini"
+      },
+      "port-bindings": [
+      ]
+    },
+    "r1": {
+      "index": "2",
+      "shortname": "r1",
+      "longname": "r1",
+      "fqdn": "r1.mini.io",
+      "group": "",
+      "labdir": "/home/raahatpathak/seclab/mini/clab-mini/r1",
+      "kind": "linux",
+      "image": "seclab/router:1",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "",
+      "mgmt-ipv4-prefix-length": 0,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-c80ca45766ac",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/home/raahatpathak/seclab/mini/clab-mini/r1",
+        "clab-node-longname": "r1",
+        "clab-node-name": "r1",
+        "clab-node-type": "",
+        "clab-owner": "raahatpathak",
+        "clab-topo-file": "/home/raahatpathak/seclab/mini/mini.clab.yml",
+        "containerlab": "mini"
+      },
+      "port-bindings": [
+      ]
+    },
+    "r2": {
+      "index": "3",
+      "shortname": "r2",
+      "longname": "r2",
+      "fqdn": "r2.mini.io",
+      "group": "",
+      "labdir": "/home/raahatpathak/seclab/mini/clab-mini/r2",
+      "kind": "linux",
+      "image": "seclab/router:1",
+      "mgmt-net": "",
+      "mgmt-intf": "",
+      "mgmt-ipv4-address": "",
+      "mgmt-ipv4-prefix-length": 0,
+      "mgmt-ipv6-address": "",
+      "mgmt-ipv6-prefix-length": 0,
+      "mac-address": "",
+      "labels": {
+        "clab-mgmt-net-bridge": "br-c80ca45766ac",
+        "clab-node-group": "",
+        "clab-node-kind": "linux",
+        "clab-node-lab-dir": "/home/raahatpathak/seclab/mini/clab-mini/r2",
+        "clab-node-longname": "r2",
+        "clab-node-name": "r2",
+        "clab-node-type": "",
+        "clab-owner": "raahatpathak",
+        "clab-topo-file": "/home/raahatpathak/seclab/mini/mini.clab.yml",
+        "containerlab": "mini"
+      },
+      "port-bindings": [
+      ]
+    }
+  },
+  "links": [
+    {
+      "endpoints": {
+        "a": {
+          "node": "h1",
+          "interface": "eth1",
+          "mac": "aa:c1:ab:bb:e3:30",
+          "peer": "z"
+        },
+        "z": {
+          "node": "r1",
+          "interface": "eth1",
+          "mac": "aa:c1:ab:03:fc:72",
+          "peer": "a"
+        }
+      }
+    },
+    {
+      "endpoints": {
+        "a": {
+          "node": "r1",
+          "interface": "eth2",
+          "mac": "aa:c1:ab:d8:b1:97",
+          "peer": "z"
+        },
+        "z": {
+          "node": "r2",
+          "interface": "eth2",
+          "mac": "aa:c1:ab:59:61:a1",
+          "peer": "a"
+        }
+      }
+    },
+    {
+      "endpoints": {
+        "a": {
+          "node": "r2",
+          "interface": "eth1",
+          "mac": "aa:c1:ab:1d:39:22",
+          "peer": "z"
+        },
+        "z": {
+          "node": "h2",
+          "interface": "eth1",
+          "mac": "aa:c1:ab:c0:16:27",
+          "peer": "a"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+
+name: mini
+
+prefix: ""
+
+mgmt:
+  network: mini-oob
+  ipv4-subnet: 172.31.254.0/24
+
+topology:
+  defaults:
+    kind: linux
+    network-mode: none
+
+  nodes:
+    r1:
+      image: seclab/router:1
+
+    r2:
+      image: seclab/router:1
+
+    h1:
+      image: seclab/client:1
+
+    h2:
+      image: seclab/client:1
+
+  links:
+    # LAN A: 192.168.1.0/24
+    - endpoints: ["h1:eth1", "r1:eth1"]
+
+    # Router-to-router transit: 192.168.12.0/30
+    - endpoints: ["r1:eth2", "r2:eth2"]
+
+    # LAN B: 192.168.2.0/24
+    - endpoints: ["r2:eth1", "h2:eth1"]
