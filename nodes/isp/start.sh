@@ -1,13 +1,18 @@
 #!/bin/bash
 set -e
 
-ip link set eth1 up
-ip addr add 203.0.113.1/24 dev eth1
+# Create a bridge for the simulated internet
+ip link add br0 type bridge
+ip link set br0 up
 
-ip link set eth2 up
-ip addr add 203.0.113.2/24 dev eth2
+# Connect all three ISP-facing interfaces
+for iface in eth1 eth2 eth3; do
+    ip link set "$iface" up
+    ip link set "$iface" master br0
+done
 
-ip link set eth3 up
-ip addr add 203.0.113.3/24 dev eth3
+# Assign the ISP gateway address to the bridge
+ip addr add 203.0.113.1/24 dev br0
 
-ip route
+ip -br addr
+bridge link
