@@ -1,0 +1,70 @@
+table inet filter {
+	counter in_drop {
+		packets 2 bytes 120
+	}
+
+	counter fwd_drop {
+		packets 45 bytes 2220
+	}
+
+	counter spoof_drop {
+		packets 1 bytes 60
+	}
+
+	counter fwd_users_out {
+		packets 2 bytes 120
+	}
+
+	counter fwd_web_to_app {
+		packets 50 bytes 3000
+	}
+
+	counter fwd_vpn_to_bastion {
+		packets 9 bytes 540
+	}
+
+	counter fwd_mgmt {
+		packets 27 bytes 1620
+	}
+
+	chain prerouting {
+		type filter hook prerouting priority raw; policy accept;
+		iifname "eth2.10" ip saddr != 10.10.10.0/24 counter name "spoof_drop" drop
+		iifname "eth2.20" ip saddr != 10.10.20.0/24 counter name "spoof_drop" drop
+		iifname "eth2.99" ip saddr != 10.10.99.0/24 counter name "spoof_drop" drop
+	}
+
+	chain input {
+		type filter hook input priority filter; policy drop;
+		iifname "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+		icmp type echo-request limit rate 5/second burst 5 packets accept
+		iifname "eth1" ip protocol ospf accept
+		iifname "eth2.99" ip saddr 10.10.99.10 tcp dport 22 accept
+		iifname "eth2.99" ip saddr 10.10.99.20 tcp dport 9100 accept
+		counter name "in_drop" drop
+	}
+
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+		ct state established,related accept
+		ct state invalid drop
+		iifname "eth2.10" oifname "eth1" tcp dport { 80, 443 } counter name "fwd_users_out" accept
+		iifname "eth2.10" oifname "eth1" icmp type echo-request accept
+		iifname "eth1" oifname "eth2.20" ip saddr 10.10.30.10 ip daddr 10.10.20.10 tcp dport 8443 counter name "fwd_web_to_app" accept
+		iifname "eth1" oifname "eth2.99" ip saddr 10.10.200.0/24 ip daddr 10.10.99.10 tcp dport 22 counter name "fwd_vpn_to_bastion" accept
+		iifname "eth1" oifname "eth2.99" ip saddr 10.10.200.0/24 ip daddr 10.10.99.10 icmp type echo-request accept
+		iifname "eth2.99" oifname "eth2.20" ip saddr 10.10.99.10 tcp dport 22 counter name "fwd_mgmt" accept
+		iifname "eth2.99" oifname "eth1" ip saddr 10.10.99.10 ip daddr { 10.10.0.1, 10.10.30.10 } tcp dport 22 counter name "fwd_mgmt" accept
+		iifname "eth2.99" oifname "eth2.20" ip saddr 10.10.99.20 tcp dport 9100 counter name "fwd_mgmt" accept
+		iifname "eth2.99" oifname "eth1" ip saddr 10.10.99.20 ip daddr { 10.10.0.1, 10.10.30.10 } tcp dport 9100 counter name "fwd_mgmt" accept
+		iifname "eth2.99" oifname "eth1" ip saddr 10.10.99.20 ip daddr 10.10.30.10 tcp dport 443 counter name "fwd_mgmt" accept
+		iifname "eth2.99" ip saddr 10.10.99.20 icmp type echo-request accept
+		counter name "fwd_drop" drop
+	}
+
+	chain output {
+		type filter hook output priority filter; policy accept;
+	}
+}

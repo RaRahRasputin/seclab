@@ -1,0 +1,19 @@
+port              vlan-id  
+eth1              10
+                  20
+                  99
+eth2              10 PVID Egress Untagged
+eth3              10 PVID Egress Untagged
+eth4              10 PVID Egress Untagged
+eth5              20 PVID Egress Untagged
+eth6              20 PVID Egress Untagged
+eth7              99 PVID Egress Untagged
+eth8              99 PVID Egress Untagged
+312: eth1@if311: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 
+314: eth2@if313: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 
+316: eth3@if315: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 
+317: eth4@if318: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 
+322: eth5@if321: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 
+324: eth6@if323: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 
+326: eth7@if325: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 
+309: eth8@if310: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 9500 master br0 state forwarding priority 32 cost 2 

@@ -1,0 +1,9 @@
+node	app	up
+node	db	up
+node	bastion	up
+node	mon	up
+node	edge	up
+node	core	up
+node	web	up
+portal_probe	https://portal.seclab.test/api/health	up
+prometheus	localhost:9090	up

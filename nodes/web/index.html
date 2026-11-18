@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SecLab Client Portal</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 40rem;
+           margin: 3rem auto; padding: 0 1rem; }
+    code { background: #eee; padding: .1rem .3rem; }
+  </style>
+</head>
+<body>
+  <h1>SecLab Client Portal</h1>
+  <p>Static page served by nginx in the DMZ. The data below this line comes from
+     the application tier:</p>
+  <ul>
+    <li><a href="/api/health"><code>/api/health</code></a> - liveness check</li>
+    <li><a href="/api/summary"><code>/api/summary</code></a> - orders and revenue per region</li>
+    <li><a href="/api/customers?region=APAC"><code>/api/customers?region=APAC</code></a>
+        - customer records</li>
+  </ul>
+</body>
+</html>

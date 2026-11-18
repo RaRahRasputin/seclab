@@ -1,0 +1,10 @@
+# Tells Grafana to load every dashboard JSON file found in this folder.
+apiVersion: 1
+providers:
+  - name: seclab
+    type: file
+    disableDeletion: true
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /var/lib/grafana/dashboards

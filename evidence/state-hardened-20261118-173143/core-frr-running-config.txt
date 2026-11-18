@@ -1,0 +1,32 @@
+Building configuration...
+
+Current configuration:
+!
+frr version 8.4.4
+frr defaults traditional
+hostname core
+log file /var/log/frr/frr.log informational
+no ipv6 forwarding
+service integrated-vtysh-config
+!
+interface eth1
+ description transit-to-edge
+ ip ospf authentication message-digest
+ ip ospf dead-interval 8
+ ip ospf hello-interval 2
+ ip ospf message-digest-key 1 md5 <removed>
+ ip ospf network point-to-point
+ no ip ospf passive
+exit
+!
+router ospf
+ ospf router-id 10.255.0.2
+ log-adjacency-changes detail
+ passive-interface default
+ network 10.10.0.0/30 area 0
+ network 10.10.10.0/24 area 0
+ network 10.10.20.0/24 area 0
+ network 10.10.99.0/24 area 0
+exit
+!
+end

@@ -1,0 +1,14 @@
+# mon - blackbox_exporter configuration.
+# One probe module: an HTTPS GET that must return 200 and whose certificate
+# must chain to the lab's private root CA.
+modules:
+  https_portal:
+    prober: http
+    timeout: 5s
+    http:
+      method: GET
+      valid_status_codes: [200]
+      fail_if_not_ssl: true
+      preferred_ip_protocol: ip4
+      tls_config:
+        ca_file: /lab/pki/root.crt

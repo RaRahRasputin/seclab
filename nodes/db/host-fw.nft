@@ -1,0 +1,34 @@
+#!/usr/sbin/nft -f
+# db - HOST firewall (hardened profile).
+# app and db share VLAN 20, so traffic between them never crosses core's
+# firewall. This ruleset is what stops any other host in the VLAN from
+# reaching PostgreSQL.
+
+table inet filter {
+  counter in_drop  { }
+  counter out_drop { }
+
+  chain input {
+    type filter hook input priority filter; policy drop;
+    iifname "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+    ip saddr 10.10.20.10 tcp dport 5432 accept          # PostgreSQL: from the app server only
+    ip saddr 10.10.99.10 tcp dport 22 accept            # SSH: from the bastion only
+    ip saddr 10.10.99.20 tcp dport 9100 accept          # metrics: to Prometheus only
+    icmp type echo-request limit rate 5/second accept
+    counter name in_drop drop
+  }
+
+  chain output {
+    # A database server has no reason to start a connection to anything.
+    type filter hook output priority filter; policy drop;
+    oifname "lo" accept
+    ct state established,related accept
+    counter name out_drop drop
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+}

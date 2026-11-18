@@ -1,0 +1,35 @@
+#!/usr/sbin/nft -f
+# bastion - HOST firewall (hardened profile).
+# Inbound SSH is accepted from the VPN address range only. Outbound, the
+# bastion may open SSH sessions to internal hosts and reach the two dashboards
+# for port-forwarding, and nothing else.
+# (fail2ban keeps its ban list in its own table, "inet f2b-table".)
+
+table inet filter {
+  counter in_drop  { }
+  counter out_drop { }
+
+  chain input {
+    type filter hook input priority filter; policy drop;
+    iifname "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+    ip saddr 10.10.200.0/24 tcp dport 22 accept         # SSH: VPN administrators only
+    ip saddr 10.10.99.20 tcp dport 9100 accept          # metrics: to Prometheus only
+    icmp type echo-request limit rate 5/second accept
+    counter name in_drop drop
+  }
+
+  chain output {
+    type filter hook output priority filter; policy drop;
+    oifname "lo" accept
+    ct state established,related accept
+    ip daddr 10.10.0.0/16 tcp dport 22 accept                     # onward SSH (ProxyJump)
+    ip daddr 10.10.99.20 tcp dport { 3000, 9090 } accept          # dashboards, for ssh -L
+    counter name out_drop drop
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+}

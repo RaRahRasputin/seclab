@@ -1,0 +1,29 @@
+table inet filter {
+	counter in_drop {
+		packets 0 bytes 0
+	}
+
+	counter oob_out_drop {
+		packets 0 bytes 0
+	}
+
+	chain input {
+		type filter hook input priority filter; policy drop;
+		iifname "lo" accept
+		ct state established,related accept
+		ct state invalid drop
+		iifname "eth0" tcp dport { 3000, 9090 } accept
+		iifname "eth1" ip saddr 10.10.99.10 tcp dport { 22, 3000, 9090 } accept
+		icmp type echo-request limit rate 5/second burst 5 packets accept
+		counter name "in_drop" drop
+	}
+
+	chain forward {
+		type filter hook forward priority filter; policy drop;
+	}
+
+	chain output {
+		type filter hook output priority filter; policy accept;
+		oifname "eth0" ct state new counter name "oob_out_drop" drop
+	}
+}

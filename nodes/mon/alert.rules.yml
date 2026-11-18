@@ -1,0 +1,53 @@
+# mon - Prometheus alerting rules. An alert is "pending" while its expression
+# is true and becomes "firing" once it has stayed true for the "for:" duration.
+# View them at http://<lab-host>:9090/alerts and in Grafana.
+groups:
+  - name: availability
+    rules:
+      - alert: NodeDown
+        expr: up{job="node"} == 0
+        for: 30s
+        labels: { severity: critical }
+        annotations:
+          summary: "{{ $labels.node }} is not answering metric scrapes"
+
+      - alert: PortalDown
+        expr: probe_success{job="portal_probe"} == 0
+        for: 30s
+        labels: { severity: critical }
+        annotations:
+          summary: "The public portal is failing its HTTPS health probe"
+
+      - alert: CertificateExpiresSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 14
+        for: 1m
+        labels: { severity: warning }
+        annotations:
+          summary: "Portal certificate expires in {{ $value | printf \"%.0f\" }} days"
+
+  - name: security
+    rules:
+      - alert: IntrusionDetected
+        expr: sum by (node, signature) (increase(seclab_suricata_alerts_total[1m])) > 0
+        labels: { severity: warning }
+        annotations:
+          summary: "Suricata on {{ $labels.node }}: {{ $labels.signature }}"
+
+      - alert: FirewallDropSpike
+        expr: sum by (node) (rate(seclab_nft_counter_packets{name=~"fwd_drop|in_drop"}[1m])) > 5
+        for: 20s
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.node }} is dropping {{ $value | printf \"%.0f\" }} packets/s"
+
+      - alert: SpoofedSourceAddress
+        expr: increase(seclab_nft_counter_packets{name="spoof_drop"}[1m]) > 0
+        labels: { severity: warning }
+        annotations:
+          summary: "{{ $labels.node }} dropped packets with a forged source address"
+
+      - alert: SSHBruteForceBanned
+        expr: seclab_fail2ban_banned_current > 0
+        labels: { severity: warning }
+        annotations:
+          summary: "fail2ban is currently banning {{ $value }} address(es) on the bastion"

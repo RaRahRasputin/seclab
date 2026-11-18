@@ -1,0 +1,186 @@
+17:27:57 INFO Containerlab started version=0.83.0
+17:27:57 INFO Parsing & checking topology file=seclab.clab.yaml
+17:27:57 INFO Creating docker network name=seclab-oob IPv4 subnet=172.31.255.0/24 IPv6 subnet="" MTU=0
+17:27:58 INFO Creating lab directory path=/home/raahatpathak/seclab/clab-seclab
+17:27:58 INFO Creating container name=mon
+17:27:58 INFO Creating container name=rogue
+17:27:58 INFO Creating container name=core
+17:27:58 INFO Creating container name=sw1
+17:27:58 INFO failed to disable TX checksum offload for eth0 interface for rogue container
+17:27:58 INFO Created link: core:eth2 ▪┄┄▪ sw1:eth1
+17:27:58 INFO Created link: sw1:eth4 ▪┄┄▪ rogue:eth1
+17:27:58 INFO failed to disable TX checksum offload for eth0 interface for core container
+17:27:58 INFO Created link: sw1:eth8 ▪┄┄▪ mon:eth1
+17:27:58 INFO failed to disable TX checksum offload for eth0 interface for sw1 container
+17:27:58 INFO Creating container name=db
+17:27:59 INFO Creating container name=attacker
+17:27:59 INFO Created link: sw1:eth6 ▪┄┄▪ db:eth1
+17:27:59 INFO failed to disable TX checksum offload for eth0 interface for db container
+17:27:59 INFO failed to disable TX checksum offload for eth0 interface for attacker container
+17:27:59 INFO Creating container name=ws1
+17:27:59 INFO Created link: sw1:eth2 ▪┄┄▪ ws1:eth1
+17:27:59 INFO failed to disable TX checksum offload for eth0 interface for ws1 container
+17:28:00 INFO Creating container name=ws2
+17:28:00 INFO Creating container name=isp
+17:28:00 INFO Created link: sw1:eth3 ▪┄┄▪ ws2:eth1
+17:28:00 INFO failed to disable TX checksum offload for eth0 interface for ws2 container
+17:28:00 INFO Created link: isp:eth2 ▪┄┄▪ attacker:eth1
+17:28:00 INFO failed to disable TX checksum offload for eth0 interface for isp container
+17:28:00 INFO Creating container name=edge
+17:28:00 INFO Created link: isp:eth1 ▪┄┄▪ edge:eth1
+17:28:00 INFO Created link: edge:eth2 ▪┄┄▪ core:eth1
+17:28:00 INFO failed to disable TX checksum offload for eth0 interface for edge container
+17:28:00 INFO Creating container name=web
+17:28:01 INFO Created link: edge:eth3 ▪┄┄▪ web:eth1
+17:28:01 INFO failed to disable TX checksum offload for eth0 interface for web container
+17:28:02 INFO Creating container name=bastion
+17:28:02 INFO Created link: sw1:eth7 ▪┄┄▪ bastion:eth1
+17:28:02 INFO failed to disable TX checksum offload for eth0 interface for bastion container
+17:28:03 INFO node "grafana" is being delayed for 10 seconds
+17:28:04 INFO Creating container name=remote
+17:28:05 INFO Created link: isp:eth3 ▪┄┄▪ remote:eth1
+17:28:05 INFO failed to disable TX checksum offload for eth0 interface for remote container
+17:28:05 INFO Creating container name=app
+17:28:05 INFO Created link: sw1:eth5 ▪┄┄▪ app:eth1
+17:28:05 INFO failed to disable TX checksum offload for eth0 interface for app container
+17:28:13 INFO Creating container name=grafana
+17:28:14 INFO Executed command node=rogue command="bash /lab/node/start.sh"
+  stdout=
+  │ [rogue] ready: eth1@if317       UP             10.10.10.66/24 
+
+17:28:14 INFO Executed command node=sw1 command="bash /lab/node/start.sh"
+  stdout=
+  │ [sw1] sw1 VLAN table:
+  │ port              vlan-id  
+  │ eth1              10
+  │                   20
+  │                   99
+  │ eth2              10 PVID Egress Untagged
+  │ eth3              10 PVID Egress Untagged
+  │ eth4              10 PVID Egress Untagged
+  │ eth5              20 PVID Egress Untagged
+  │ eth6              20 PVID Egress Untagged
+  │ eth7              99 PVID Egress Untagged
+  │ eth8              99 PVID Egress Untagged
+
+17:28:14 INFO Executed command node=attacker command="bash /lab/node/start.sh"
+  stdout=
+  │ [attacker] ready: eth1@if327       LOWERLAYERDOWN 203.0.113.66/24 
+
+17:28:14 INFO Executed command node=mon command="bash /lab/node/start.sh"
+  stdout=
+  │ [mon] firewall loaded: /lab/node/host-fw.nft
+  │ [mon] ready: eth1@if309       UP             10.10.99.20/24 
+
+17:28:14 INFO Executed command node=ws1 command="bash /lab/node/start.sh 11"
+  stdout=
+  │ [ws1] ready: eth1@if314       UP             10.10.10.11/24 
+
+17:28:14 INFO Executed command node=isp command="bash /lab/node/start.sh"
+  stdout=
+  │ [isp] isp switch up: eth1 eth2 eth3 
+
+17:28:14 INFO Executed command node=ws2 command="bash /lab/node/start.sh 12"
+  stdout=
+  │ [ws2] ready: eth1@if316       UP             10.10.10.12/24 
+
+17:28:14 INFO Executed command node=web command="bash /lab/node/start.sh"
+  stdout=
+  │ [web] nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+  │ [web] nginx: configuration file /etc/nginx/nginx.conf test is successful
+  │ [web] firewall loaded: /lab/node/host-fw.nft
+  │ [web] ready (profile: hardened)
+
+17:28:14 INFO Executed command node=bastion command="bash /lab/node/start.sh"
+  stdout=
+  │ [bastion] firewall loaded: /lab/node/host-fw.nft
+  │ [bastion] fail2ban started
+  │ [bastion] ready (profile: hardened)
+
+17:28:14 INFO Executed command node=core command="bash /lab/node/start.sh"
+  stdout=
+  │  * Starting watchfrr with command: '  /usr/lib/frr/watchfrr  -d  -F traditional   zebra ospfd staticd'
+  │  * Started watchfrr
+  │ suricata started on eth2.10 (pid 98)
+  │ [core] firewall loaded: /lab/node/nft-hardened.nft
+  │ [core] ready (profile: hardened)
+
+17:28:14 INFO Executed command node=db command="bash /lab/node/start.sh"
+  stdout=
+  │ [db] database initialised
+  │ [db] firewall loaded: /lab/node/host-fw.nft
+  │ [db] ready (profile: hardened)
+
+17:28:14 INFO Executed command node=edge command="bash /lab/node/start.sh"
+  stdout=
+  │ [edge] wg: [#] ip link add wg0 type wireguard
+  │ [edge] wg: [#] wg setconf wg0 /dev/fd/63
+  │ [edge] wg: [#] ip -4 address add 10.10.200.1/24 dev wg0
+  │ [edge] wg: [#] ip link set mtu 1420 up dev wg0
+  │  * Starting watchfrr with command: '  /usr/lib/frr/watchfrr  -d  -F traditional   zebra ospfd staticd'
+  │  * Started watchfrr
+  │ suricata started on eth1 (pid 120)
+  │ [edge] firewall loaded: /lab/node/nft-hardened.nft
+  │ [edge] ready (profile: hardened)
+
+17:28:14 INFO Executed command node=app command="bash /lab/node/start.sh"
+  stdout=
+  │ [app] nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+  │ [app] nginx: configuration file /etc/nginx/nginx.conf test is successful
+  │ [app] firewall loaded: /lab/node/host-fw.nft
+  │ [app] ready (profile: hardened)
+
+17:28:14 INFO Executed command node=remote command="bash /lab/node/start.sh"
+  stdout=
+  │ [remote] ready: eth1@if332       UP             203.0.113.50/24 
+
+17:28:14 INFO Adding host entries path=/etc/hosts
+17:28:14 INFO Adding SSH config for nodes path=/etc/ssh/ssh_config.d/clab-seclab.conf
+[1m╭[0m[1m──────────[0m[1m┬[0m[1m────────────────────────[0m[1m┬[0m[1m─────────[0m[1m┬[0m[1m────────────────[0m[1m╮[0m
+[1m│[0m[1m   Name   [0m[1m│[0m[1m       Kind/Image       [0m[1m│[0m[1m  State  [0m[1m│[0m[1m IPv4/6 Address [0m[1m│[0m
+[1m├[0m[1m──────────[0m[1m┼[0m[1m────────────────────────[0m[1m┼[0m[1m─────────[0m[1m┼[0m[1m────────────────[0m[1m┤[0m
+│ app      │ linux                  │ running │ N/A            │
+│          │ seclab/server:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ attacker │ linux                  │ running │ N/A            │
+│          │ seclab/attacker:1      │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ bastion  │ linux                  │ running │ N/A            │
+│          │ seclab/server:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ core     │ linux                  │ running │ N/A            │
+│          │ seclab/router:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ db       │ linux                  │ running │ N/A            │
+│          │ seclab/server:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ edge     │ linux                  │ running │ N/A            │
+│          │ seclab/router:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ grafana  │ linux                  │ running │ N/A            │
+│          │ grafana/grafana:12.4.5 │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ isp      │ linux                  │ running │ N/A            │
+│          │ seclab/base:1          │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ mon      │ linux                  │ running │ 172.31.255.2   │
+│          │ seclab/server:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ remote   │ linux                  │ running │ N/A            │
+│          │ seclab/client:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ rogue    │ linux                  │ running │ N/A            │
+│          │ seclab/attacker:1      │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ sw1      │ linux                  │ running │ N/A            │
+│          │ seclab/base:1          │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ web      │ linux                  │ running │ N/A            │
+│          │ seclab/server:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ ws1      │ linux                  │ running │ N/A            │
+│          │ seclab/client:1        │         │ N/A            │
+├──────────┼────────────────────────┼─────────┼────────────────┤
+│ ws2      │ linux                  │ running │ N/A            │
+│          │ seclab/client:1        │         │ N/A            │
+╰──────────┴────────────────────────┴─────────┴────────────────╯

@@ -1,0 +1,17 @@
+# bastion - sshd, BASELINE profile: close to a default installation.
+# Passwords accepted, root may log in, no restriction on relaying.
+
+Port 22
+AddressFamily inet
+PermitRootLogin yes
+PubkeyAuthentication yes
+PasswordAuthentication yes
+KbdInteractiveAuthentication no
+UsePAM no
+MaxAuthTries 6
+MaxStartups 100:30:200
+AllowTcpForwarding yes
+X11Forwarding yes
+LogLevel INFO
+PrintMotd no
+Subsystem sftp internal-sftp

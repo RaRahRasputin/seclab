@@ -1,0 +1,8 @@
+lo               UNKNOWN        127.0.0.1/8 
+eth1@if326       UP             10.10.99.10/24 
+
+default via 10.10.99.1 dev eth1 
+10.10.99.0/24 dev eth1 proto kernel scope link src 10.10.99.10 
+
+tcp 0.0.0.0:22 users:(("sshd",pid=77,fd=3))
+tcp *:9100 users:(("prometheus-node",pid=30,fd=3))

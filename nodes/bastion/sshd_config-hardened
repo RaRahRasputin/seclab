@@ -1,0 +1,40 @@
+# bastion - sshd, hardened profile.
+# The bastion ("jump host") is the single doorway for administration. Every
+# SSH session to any server is relayed through it, so there is exactly one
+# place to harden, to watch and to log.
+
+Port 22
+AddressFamily inet
+
+# --- Authentication: keys only, never root, one named account -------------
+PermitRootLogin no
+PubkeyAuthentication yes
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PermitEmptyPasswords no
+AuthenticationMethods publickey
+AllowUsers labadmin
+UsePAM no
+
+# --- Limit what an attacker gets to try -----------------------------------
+MaxAuthTries 3
+MaxSessions 4
+MaxStartups 10:30:60
+LoginGraceTime 20
+
+# --- Relaying: allowed, but only to this explicit list of destinations ----
+# (ProxyJump needs TCP forwarding. PermitOpen turns "relay anywhere" into
+#  "relay to the SSH ports of our own servers and to the two dashboards".)
+AllowTcpForwarding yes
+PermitOpen 10.10.30.10:22 10.10.20.10:22 10.10.20.20:22 10.10.0.1:22 10.10.99.1:22 10.10.99.20:22 10.10.99.20:3000 10.10.99.20:9090
+AllowAgentForwarding no
+X11Forwarding no
+PermitTunnel no
+GatewayPorts no
+
+# --- Drop dead sessions, keep detailed logs (key fingerprint of every login) ---
+ClientAliveInterval 300
+ClientAliveCountMax 2
+LogLevel VERBOSE
+PrintMotd no
+Subsystem sftp internal-sftp

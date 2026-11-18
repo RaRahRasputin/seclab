@@ -1,0 +1,12 @@
+lo               UNKNOWN        127.0.0.1/8 
+br0              UP             
+eth8@if310       UP             
+eth1@if311       UP             
+eth2@if313       UP             
+eth3@if315       UP             
+eth4@if318       UP             
+eth5@if321       UP             
+eth6@if323       UP             
+eth7@if325       UP             
+
+

@@ -1,0 +1,50 @@
+# mon - Prometheus configuration.
+# Prometheus PULLS ("scrapes") metrics over HTTP from each target every 10 s
+# and stores them as time series. All targets are reached across the routed,
+# firewalled data plane - the scrape itself proves the allow-rules work.
+
+global:
+  scrape_interval: 10s
+  evaluation_interval: 10s
+
+rule_files:
+  - /lab/node/alert.rules.yml
+
+scrape_configs:
+  # Host metrics (CPU, memory, network) plus our own seclab_* security metrics.
+  - job_name: node
+    static_configs:
+      - targets: ['10.10.0.1:9100']
+        labels: { node: edge,    zone: perimeter }
+      - targets: ['10.10.99.1:9100']
+        labels: { node: core,    zone: core }
+      - targets: ['10.10.30.10:9100']
+        labels: { node: web,     zone: dmz }
+      - targets: ['10.10.20.10:9100']
+        labels: { node: app,     zone: servers }
+      - targets: ['10.10.20.20:9100']
+        labels: { node: db,      zone: servers }
+      - targets: ['10.10.99.10:9100']
+        labels: { node: bastion, zone: mgmt }
+      - targets: ['localhost:9100']
+        labels: { node: mon,     zone: mgmt }
+
+  # Black-box probe: fetch the portal over HTTPS exactly as a user would and
+  # record whether it worked, how long it took and when the certificate expires.
+  - job_name: portal_probe
+    metrics_path: /probe
+    params:
+      module: [https_portal]
+    static_configs:
+      - targets: ['https://portal.seclab.test/api/health']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9115
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']

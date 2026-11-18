@@ -1,0 +1,37 @@
+#!/usr/sbin/nft -f
+# mon - HOST firewall (applied in BOTH profiles; monitoring is the measuring
+# instrument and must behave the same in the "before" and "after" runs).
+#
+# mon is the only node with two interfaces:
+#   eth1  management VLAN (data plane) - scrapes leave here
+#   eth0  out-of-band console port to the lab host - the dashboards are
+#         published to your laptop's browser through it
+# The two are never bridged: forwarding is off and the forward chain drops.
+
+table inet filter {
+  counter in_drop      { }
+  counter oob_out_drop { }
+
+  chain input {
+    type filter hook input priority filter; policy drop;
+    iifname "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+    # Grafana / Prometheus UI: from the lab host (eth0), or from the bastion (eth1)
+    iifname "eth0" tcp dport { 3000, 9090 } accept
+    iifname "eth1" ip saddr 10.10.99.10 tcp dport { 22, 3000, 9090 } accept
+    icmp type echo-request limit rate 5/second accept
+    counter name in_drop drop
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+    # The out-of-band port is for ANSWERING the lab host's browser, never for
+    # starting connections: the monitoring server gets no path to the real internet.
+    oifname "eth0" ct state new counter name oob_out_drop drop
+  }
+}

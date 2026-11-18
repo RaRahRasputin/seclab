@@ -1,0 +1,10 @@
+lo               UNKNOWN        127.0.0.1/8 
+eth1@if322       UP             10.10.20.10/24 
+
+default via 10.10.20.1 dev eth1 
+10.10.20.0/24 dev eth1 proto kernel scope link src 10.10.20.10 
+
+tcp 0.0.0.0:8443 users:(("nginx",pid=941,fd=5),("nginx",pid=940,fd=5),("nginx",pid=939,fd=5),("nginx",pid=938,fd=5),("nginx",pid=937,fd=5))
+tcp 0.0.0.0:22 users:(("sshd",pid=911,fd=3))
+tcp 127.0.0.1:5000 users:(("gunicorn",pid=943,fd=6),("gunicorn",pid=936,fd=6),("gunicorn",pid=931,fd=6))
+tcp *:9100 users:(("prometheus-node",pid=915,fd=3))

@@ -1,0 +1,23 @@
+# bastion - fail2ban configuration. Copied to /etc/fail2ban/jail.local
+# fail2ban reads the authentication log; when one address fails "maxretry"
+# times within "findtime" seconds it inserts a firewall rule that drops that
+# address for "bantime" seconds.
+
+[DEFAULT]
+bantime   = 600
+findtime  = 120
+maxretry  = 3
+# Read the log file directly (the default on Ubuntu is the systemd journal,
+# which does not exist inside a container).
+backend   = polling
+# Ban by adding the address to an nftables set (not the legacy iptables).
+banaction = nftables-multiport
+banaction_allports = nftables-allports
+
+[sshd]
+enabled  = true
+# "aggressive" also counts connections that are refused before a password is
+# even tried, e.g. a client with no valid key when only keys are accepted.
+mode     = aggressive
+port     = 22
+logpath  = /var/log/auth.log
