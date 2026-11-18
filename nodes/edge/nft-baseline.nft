@@ -1,0 +1,38 @@
+#!/usr/sbin/nft -f
+# edge - BASELINE profile: the "before" network.
+# A flat, permissive configuration of the kind a small office ends up with when
+# things are opened "just to make it work". Used ONLY for the before/after tests.
+
+define WAN      = "eth1"
+define WEB      = 10.10.30.10
+define BASTION  = 10.10.99.10
+define DB       = 10.10.20.20
+define INTERNAL = 10.10.0.0/16
+
+table inet filter {
+  # Same counter names as the hardened profile so the metrics script still works.
+  counter in_drop            { }
+  counter fwd_drop           { }
+  counter spoof_drop         { }
+  counter fwd_wan_to_web     { }
+  counter fwd_users_out      { }
+  counter fwd_web_to_app     { }
+  counter fwd_vpn_to_bastion { }
+
+  chain input   { type filter hook input   priority filter; policy accept; }
+  chain forward { type filter hook forward priority filter; policy accept; }
+  chain output  { type filter hook output  priority filter; policy accept; }
+}
+
+table ip nat {
+  chain prerouting {
+    type nat hook prerouting priority dstnat; policy accept;
+    iifname $WAN tcp dport 80   dnat to $WEB
+    iifname $WAN tcp dport 2222 dnat to $BASTION:22      # SSH exposed to the internet
+    iifname $WAN tcp dport 5432 dnat to $DB              # database exposed to the internet
+  }
+  chain postrouting {
+    type nat hook postrouting priority srcnat; policy accept;
+    oifname $WAN ip saddr $INTERNAL masquerade
+  }
+}

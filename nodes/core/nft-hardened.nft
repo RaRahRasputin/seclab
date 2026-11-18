@@ -1,0 +1,97 @@
+#!/usr/sbin/nft -f
+# core - INTERNAL SEGMENTATION FIREWALL, hardened profile.
+# core routes between the VLANs, so it is the one place where every packet
+# moving from one zone to another can be inspected. Policy: default deny.
+
+define TRANSIT    = "eth1"       # to edge (DMZ, VPN and internet lie beyond)
+define USERS_IF   = "eth2.10"    # VLAN 10
+define SERVERS_IF = "eth2.20"    # VLAN 20
+define MGMT_IF    = "eth2.99"    # VLAN 99
+
+define USERS    = 10.10.10.0/24
+define SERVERS  = 10.10.20.0/24
+define MGMT     = 10.10.99.0/24
+define VPNNET   = 10.10.200.0/24
+define EDGE     = 10.10.0.1
+define WEB      = 10.10.30.10
+define APP      = 10.10.20.10
+define BASTION  = 10.10.99.10
+define MON      = 10.10.99.20
+
+table inet filter {
+  counter in_drop            { }
+  counter fwd_drop           { }
+  counter spoof_drop         { }
+  counter fwd_users_out      { }
+  counter fwd_web_to_app     { }
+  counter fwd_vpn_to_bastion { }
+  counter fwd_mgmt           { }
+
+  # Anti-spoofing: a packet arriving from a VLAN must carry a source address
+  # that belongs to that VLAN. Stops a users-zone host forging a server address.
+  # Hooked at "prerouting / raw" so it runs before anything else looks at the
+  # packet (the kernel's own reverse-path filter, rp_filter=1, is the backstop).
+  chain prerouting {
+    type filter hook prerouting priority raw; policy accept;
+    iifname $USERS_IF   ip saddr != $USERS   counter name spoof_drop drop
+    iifname $SERVERS_IF ip saddr != $SERVERS counter name spoof_drop drop
+    iifname $MGMT_IF    ip saddr != $MGMT    counter name spoof_drop drop
+  }
+
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    iifname "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+
+    icmp type echo-request limit rate 5/second accept           # hosts may ping their gateway
+    iifname $TRANSIT ip protocol 89 accept                       # OSPF from edge
+    iifname $MGMT_IF ip saddr $BASTION tcp dport 22 accept       # admin SSH, bastion only
+    iifname $MGMT_IF ip saddr $MON tcp dport 9100 accept         # Prometheus scrape
+
+    counter name in_drop drop
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+
+    ct state established,related accept
+    ct state invalid drop
+
+    # C1  staff -> outside (DMZ portal and internet): web and ping only
+    iifname $USERS_IF oifname $TRANSIT tcp dport { 80, 443 } counter name fwd_users_out accept
+    iifname $USERS_IF oifname $TRANSIT icmp type echo-request accept
+
+    # C2  DMZ web server -> application API
+    iifname $TRANSIT oifname $SERVERS_IF ip saddr $WEB ip daddr $APP tcp dport 8443 \
+        counter name fwd_web_to_app accept
+
+    # C3  VPN administrators -> bastion
+    iifname $TRANSIT oifname $MGMT_IF ip saddr $VPNNET ip daddr $BASTION tcp dport 22 \
+        counter name fwd_vpn_to_bastion accept
+    iifname $TRANSIT oifname $MGMT_IF ip saddr $VPNNET ip daddr $BASTION \
+        icmp type echo-request accept
+
+    # C4  bastion -> SSH to the servers, the DMZ web server and the edge router
+    iifname $MGMT_IF oifname $SERVERS_IF ip saddr $BASTION tcp dport 22 counter name fwd_mgmt accept
+    iifname $MGMT_IF oifname $TRANSIT ip saddr $BASTION ip daddr { $WEB, $EDGE } tcp dport 22 \
+        counter name fwd_mgmt accept
+
+    # C5  monitoring -> metrics endpoints, the portal health probe, and ping
+    iifname $MGMT_IF oifname $SERVERS_IF ip saddr $MON tcp dport 9100 counter name fwd_mgmt accept
+    iifname $MGMT_IF oifname $TRANSIT ip saddr $MON ip daddr { $WEB, $EDGE } tcp dport 9100 \
+        counter name fwd_mgmt accept
+    iifname $MGMT_IF oifname $TRANSIT ip saddr $MON ip daddr $WEB tcp dport 443 \
+        counter name fwd_mgmt accept
+    iifname $MGMT_IF ip saddr $MON icmp type echo-request accept
+
+    # Not listed, therefore denied:
+    #   users -> servers, users -> management, servers -> anywhere, anything -> users
+    counter name fwd_drop drop
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+  }
+}

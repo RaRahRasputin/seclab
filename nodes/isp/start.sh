@@ -1,18 +1,16 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+# isp: a plain Layer-2 switch standing in for "the internet".
+# Everything plugged into it shares the 203.0.113.0/24 segment
+# (TEST-NET-3, an address block reserved by RFC 5737 for documentation and
+# testing, so it can never collide with a real network).
+source /lab/common/lib.sh
+disable_ipv6
 
-# Create a bridge for the simulated internet
 ip link add br0 type bridge
 ip link set br0 up
-
-# Connect all three ISP-facing interfaces
-for iface in eth1 eth2 eth3; do
-    ip link set "$iface" up
-    ip link set "$iface" master br0
+for port in eth1 eth2 eth3; do
+  wait_if "$port"
+  ip link set "$port" master br0
+  ip link set "$port" up
 done
-
-# Assign the ISP gateway address to the bridge
-ip addr add 203.0.113.1/24 dev br0
-
-ip -br addr
-bridge link
+log "isp switch up: $(ls /sys/class/net/br0/brif | tr '\n' ' ')"

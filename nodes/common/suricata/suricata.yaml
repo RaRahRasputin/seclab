@@ -1,0 +1,67 @@
+%YAML 1.1
+---
+# SecLab Suricata configuration - deliberately minimal, so that every line can
+# be explained. Anything not set here keeps Suricata's built-in default.
+# Used by nodes/common/ids.sh on both sensors (edge and core).
+
+# Which addresses are "ours". Rules refer to these as $HOME_NET / $EXTERNAL_NET.
+vars:
+  address-groups:
+    HOME_NET: "[10.10.0.0/16,203.0.113.1/32]"
+    EXTERNAL_NET: "any"
+
+default-log-dir: /var/log/suricata/
+pid-file: /var/run/suricata.pid
+
+# Rule metadata: maps "classtype:attempted-recon" etc. to a priority.
+classification-file: /etc/suricata/classification.config
+reference-config-file: /etc/suricata/reference.config
+
+# Internal engine statistics are not needed for the lab.
+stats:
+  enabled: no
+
+outputs:
+  # One line per alert, human readable:   tail -f /var/log/suricata/fast.log
+  - fast:
+      enabled: yes
+      filename: fast.log
+  # One JSON object per alert, machine readable. Only ALERT events are logged.
+  # (By default Suricata would also log every flow, HTTP request and TLS
+  # handshake; under the load test that grows by hundreds of megabytes.)
+  - eve-log:
+      enabled: yes
+      filetype: regular
+      filename: eve.json
+      types:
+        - alert
+
+# Suricata's own diagnostics.
+logging:
+  default-log-level: notice
+  outputs:
+    - console:
+        enabled: no
+    - file:
+        enabled: yes
+        level: info
+        filename: suricata.log
+
+# Capture method: AF_PACKET reads copies of the packets straight from a Linux
+# network interface. IDS mode = it only listens; it cannot block or delay traffic.
+af-packet:
+  - interface: default
+    threads: 1
+    cluster-id: 99
+    cluster-type: cluster_flow
+    defrag: yes
+
+# Protocol parsers the rules need: HTTP (for the User-Agent rules R3 and R5).
+app-layer:
+  protocols:
+    http:
+      enabled: yes
+    tls:
+      enabled: yes
+    ssh:
+      enabled: yes

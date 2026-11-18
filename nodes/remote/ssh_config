@@ -1,0 +1,34 @@
+# ~/.ssh/config on the administrator's laptop.
+# "ProxyJump bastion" means: open an SSH session to the bastion first, then ask
+# the bastion to relay a TCP connection to the real target. Authentication to the
+# target is still end-to-end with the laptop's key - the bastion never sees it.
+
+Host bastion
+    HostName 10.10.99.10
+    User labadmin
+
+Host web app db edge core mon
+    User labadmin
+    ProxyJump bastion
+
+Host web
+    HostName 10.10.30.10
+Host app
+    HostName 10.10.20.10
+Host db
+    HostName 10.10.20.20
+Host edge
+    HostName 10.10.0.1
+Host core
+    HostName 10.10.99.1
+Host mon
+    HostName 10.10.99.20
+
+Host *
+    IdentityFile ~/.ssh/id_ed25519
+    IdentitiesOnly yes
+    # Lab convenience: nodes get fresh host keys at every deploy. See the
+    # limitations section of the report - a real deployment pins host keys.
+    StrictHostKeyChecking accept-new
+    UserKnownHostsFile /dev/null
+    LogLevel ERROR

@@ -1,0 +1,4 @@
+
+# Generated PKI secrets and certificates
+pki/ca/
+pki/out/

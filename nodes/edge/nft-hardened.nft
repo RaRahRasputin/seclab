@@ -1,0 +1,108 @@
+#!/usr/sbin/nft -f
+# edge - PERIMETER FIREWALL, hardened profile.
+# Policy: default deny in every direction; each permitted flow is one named rule.
+# Loaded by start.sh with:  nft flush ruleset; nft -f /lab/node/nft-hardened.nft
+
+define WAN  = "eth1"     # simulated internet, 203.0.113.0/24
+define CORE = "eth2"     # transit link to core, 10.10.0.0/30
+define DMZ  = "eth3"     # DMZ, 10.10.30.0/24
+define VPN  = "wg0"      # WireGuard tunnel, 10.10.200.0/24
+
+define WEB      = 10.10.30.10
+define APP      = 10.10.20.10
+define BASTION  = 10.10.99.10
+define MON      = 10.10.99.20
+define USERS    = 10.10.10.0/24
+define VPNNET   = 10.10.200.0/24
+define INTERNAL = 10.10.0.0/16
+# Private and loopback ranges must never appear as a SOURCE on the internet side.
+define BOGONS   = { 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 127.0.0.0/8 }
+
+table inet filter {
+  # Named counters. scripts read them with "nft -j list counters" and
+  # publish them to Prometheus, so every drop becomes a point on a graph.
+  counter in_drop            { }
+  counter fwd_drop           { }
+  counter spoof_drop         { }
+  counter fwd_wan_to_web     { }
+  counter fwd_users_out      { }
+  counter fwd_web_to_app     { }
+  counter fwd_vpn_to_bastion { }
+
+  # ---- anti-spoofing, before anything else looks at the packet ----------
+  chain prerouting {
+    type filter hook prerouting priority raw; policy accept;
+    iifname $WAN ip saddr $BOGONS counter name spoof_drop drop
+  }
+
+  # ---- traffic addressed to the router itself --------------------------
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    iifname "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+
+    icmp type echo-request limit rate 5/second accept
+    iifname $WAN  udp dport 51820 accept                      # WireGuard handshake + data
+    iifname $CORE ip protocol 89 accept                       # OSPF (IP protocol 89)
+    iifname $CORE ip saddr $BASTION tcp dport 22 accept       # admin SSH, bastion only
+    iifname $CORE ip saddr $MON tcp dport 9100 accept         # Prometheus scrape
+
+    counter name in_drop drop
+  }
+
+  # ---- traffic passing THROUGH the router ------------------------------
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+
+    ct state established,related accept
+    ct state invalid drop
+
+    # F1  internet -> public web server (destination already rewritten by DNAT)
+    iifname $WAN oifname $DMZ ip daddr $WEB tcp dport { 80, 443 } counter name fwd_wan_to_web accept
+
+    # F2  staff -> the portal in the DMZ
+    iifname $CORE oifname $DMZ ip saddr $USERS ip daddr $WEB tcp dport { 80, 443 } accept
+
+    # F3  staff -> internet: web browsing and ping only
+    iifname $CORE oifname $WAN ip saddr $USERS tcp dport { 80, 443 } \
+        counter name fwd_users_out accept
+    iifname $CORE oifname $WAN ip saddr $USERS icmp type echo-request accept
+
+    # F4  DMZ web server -> application API. The ONLY flow allowed from the DMZ inwards.
+    iifname $DMZ oifname $CORE ip saddr $WEB ip daddr $APP tcp dport 8443 \
+        counter name fwd_web_to_app accept
+
+    # F5  VPN administrators -> bastion (SSH and ping). Nothing else is reachable over the VPN.
+    iifname $VPN oifname $CORE ip saddr $VPNNET ip daddr $BASTION tcp dport 22 \
+        counter name fwd_vpn_to_bastion accept
+    iifname $VPN oifname $CORE ip saddr $VPNNET ip daddr $BASTION icmp type echo-request accept
+
+    # F6  management plane -> DMZ: bastion SSH, Prometheus scrape and HTTPS probe
+    iifname $CORE oifname $DMZ ip saddr $BASTION ip daddr $WEB tcp dport 22 accept
+    iifname $CORE oifname $DMZ ip saddr $MON ip daddr $WEB tcp dport { 443, 9100 } accept
+    iifname $CORE oifname $DMZ ip saddr $MON ip daddr $WEB icmp type echo-request accept
+
+    # Everything else is counted and dropped. Note what is absent: servers and
+    # the management zone have no rule towards the internet at all.
+    counter name fwd_drop drop
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+  }
+}
+
+table ip nat {
+  chain prerouting {
+    type nat hook prerouting priority dstnat; policy accept;
+    # Port forwarding (destination NAT): the public address answers for the web server.
+    iifname $WAN tcp dport { 80, 443 } dnat to $WEB
+  }
+  chain postrouting {
+    type nat hook postrouting priority srcnat; policy accept;
+    # Source NAT (PAT): internal hosts leave with the edge's public address.
+    oifname $WAN ip saddr $INTERNAL masquerade
+  }
+}

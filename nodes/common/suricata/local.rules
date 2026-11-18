@@ -1,0 +1,64 @@
+# SecLab Suricata rules. Hand-written so that every member can explain every rule.
+# SIDs 1000000-1999999 are reserved for local use. The same file is loaded by
+# both sensors: edge (listening on the internet link) and core (listening on the
+# users VLAN).
+#
+# Anatomy of a rule:
+#   action proto src_ip src_port -> dst_ip dst_port (options)
+# "flow:to_server" = only packets travelling from the client that opened the connection.
+# "flags:S,12" matches a TCP SYN (the 12 tells Suricata to ignore the two ECN bits).
+# "threshold ... type both" = alert once per time window when the count is reached.
+# A backslash at the end of a line continues the rule on the next line.
+
+# R1  Port scan: one source sends SYNs to many ports in a short time.
+alert tcp any any -> $HOME_NET any ( \
+    msg:"SECLAB R1 TCP port scan"; \
+    flow:to_server; flags:S,12; threshold:type both, track by_src, count 40, seconds 5; \
+    classtype:attempted-recon; sid:1000001; rev:1;)
+
+# R2  SSH brute force: many new SSH connections from one source.
+alert tcp any any -> $HOME_NET [22,2222] ( \
+    msg:"SECLAB R2 SSH connection burst - possible brute force"; \
+    flow:to_server; flags:S,12; threshold:type both, track by_src, count 5, seconds 30; \
+    classtype:attempted-admin; sid:1000002; rev:1;)
+
+# R3  Nikto web scanner, identified by its User-Agent (only visible in clear-text HTTP).
+alert http any any -> $HOME_NET any ( \
+    msg:"SECLAB R3 Nikto web scanner User-Agent"; \
+    flow:to_server,established; http.user_agent; content:"Nikto"; nocase; \
+    threshold:type limit, track by_src, count 1, seconds 60; \
+    classtype:web-application-attack; sid:1000003; rev:1;)
+
+# R4  Web scan or flood: a burst of new connections to the web ports. Works for HTTPS too,
+#     because it looks at connection rate, not at (encrypted) content.
+alert tcp any any -> $HOME_NET [80,443] ( \
+    msg:"SECLAB R4 Web connection burst - scan or flood"; \
+    flow:to_server; flags:S,12; threshold:type both, track by_src, count 150, seconds 10; \
+    classtype:attempted-recon; sid:1000004; rev:1;)
+
+# R5  Nmap scripting engine User-Agent.
+alert http any any -> $HOME_NET any ( \
+    msg:"SECLAB R5 Nmap Scripting Engine User-Agent"; \
+    flow:to_server,established; http.user_agent; content:"Nmap Scripting Engine"; nocase; \
+    threshold:type limit, track by_src, count 1, seconds 60; classtype:attempted-recon; \
+    sid:1000005; rev:1;)
+
+# R6  Lateral movement: a users-zone host opens a connection towards the server or
+#     management zone. Policy says staff PCs only ever talk to the DMZ portal, so a
+#     single such packet is already a violation worth an alert.
+alert tcp 10.10.10.0/24 any -> [10.10.20.0/24,10.10.99.0/24] any ( \
+    msg:"SECLAB R6 Users-zone host probing servers or management"; \
+    flow:to_server; flags:S,12; threshold:type limit, track by_src, count 1, seconds 30; \
+    classtype:policy-violation; sid:1000006; rev:1;)
+
+# R7  Database access from anything other than the application server.
+alert tcp !10.10.20.10 any -> any 5432 ( \
+    msg:"SECLAB R7 PostgreSQL connection attempt from non-application host"; \
+    flow:to_server; flags:S,12; threshold:type limit, track by_src, count 1, seconds 30; \
+    classtype:policy-violation; sid:1000007; rev:1;)
+
+# R8  Ping sweep.
+alert icmp any any -> $HOME_NET any ( \
+    msg:"SECLAB R8 ICMP ping sweep"; \
+    itype:8; threshold:type both, track by_src, count 10, seconds 5; \
+    classtype:attempted-recon; sid:1000008; rev:1;)

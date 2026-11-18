@@ -1,0 +1,17 @@
+#!/usr/sbin/nft -f
+# core - BASELINE profile: a flat internal network. core still routes between
+# the VLANs but filters nothing, so the VLANs give no security separation.
+
+table inet filter {
+  counter in_drop            { }
+  counter fwd_drop           { }
+  counter spoof_drop         { }
+  counter fwd_users_out      { }
+  counter fwd_web_to_app     { }
+  counter fwd_vpn_to_bastion { }
+  counter fwd_mgmt           { }
+
+  chain input   { type filter hook input   priority filter; policy accept; }
+  chain forward { type filter hook forward priority filter; policy accept; }
+  chain output  { type filter hook output  priority filter; policy accept; }
+}

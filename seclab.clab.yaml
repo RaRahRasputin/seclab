@@ -1,0 +1,213 @@
+# SecLab - containerlab topology definition (Blueprint B.1, B.3, figure B2).
+#
+# Deploy (on the lab host, from the repository root):
+#     echo hardened > state/profile
+#     sudo containerlab deploy -t seclab.clab.yaml
+# Destroy:
+#     sudo containerlab destroy -t seclab.clab.yaml --cleanup
+#
+# Reading guide
+#   nodes:  one entry per device. "kind: linux" = an ordinary Linux container.
+#   links:  one entry per virtual cable. "edge:eth2" = interface eth2 of node edge.
+#   binds:  folders of this repository mounted read-only into the container:
+#             /lab/common  shared helper scripts and config
+#             /lab/node    this node's own config (nodes/<name>/)
+#             /lab/pki     this node's own secrets (pki/out/<name>/)
+#             /lab/state   the current security profile
+#   exec:   command containerlab runs inside the node AFTER its cables exist.
+#   network-mode: none = no Docker network at all. The node's ONLY connectivity
+#           is the cables listed under "links", so nothing can bypass the firewalls.
+
+name: seclab
+prefix: ""                      # containers are named exactly like the nodes: edge, core, web...
+
+mgmt:
+  network: seclab-oob           # out-of-band console network; only "mon" is attached to it
+  ipv4-subnet: 172.31.255.0/24
+
+topology:
+  defaults:
+    kind: linux
+
+  nodes:
+    # ------------------------------------------------ simulated internet ----
+    isp:
+      image: seclab/base:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/isp:/lab/node:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    attacker:
+      image: seclab/attacker:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/attacker:/lab/node:ro
+        - tests/wordlists:/lab/wordlists:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    remote:
+      image: seclab/client:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/remote:/lab/node:ro
+        - pki/out/remote:/lab/pki:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    # ------------------------------------------------ routers / firewalls ---
+    edge:
+      image: seclab/router:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/edge:/lab/node:ro
+        - pki/out/edge:/lab/pki:ro
+        - state:/lab/state:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    core:
+      image: seclab/router:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/core:/lab/node:ro
+        - pki/out/core:/lab/pki:ro
+        - state:/lab/state:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    sw1:
+      image: seclab/base:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/sw1:/lab/node:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    # ------------------------------------------------ DMZ -------------------
+    web:
+      image: seclab/server:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/web:/lab/node:ro
+        - pki/out/web:/lab/pki:ro
+        - state:/lab/state:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    # ------------------------------------------------ VLAN 20 servers -------
+    db:
+      image: seclab/server:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/db:/lab/node:ro
+        - pki/out/db:/lab/pki:ro
+        - state:/lab/state:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    app:
+      image: seclab/server:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/app:/lab/node:ro
+        - pki/out/app:/lab/pki:ro
+        - state:/lab/state:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    # ------------------------------------------------ VLAN 99 management ----
+    bastion:
+      image: seclab/server:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/bastion:/lab/node:ro
+        - pki/out/bastion:/lab/pki:ro
+        - state:/lab/state:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    mon:
+      image: seclab/server:1
+      # No "network-mode: none" here: mon keeps an eth0 on the out-of-band
+      # network so that the two dashboards can be published to the lab host.
+      ports:
+        - "3000:3000"           # Grafana
+        - "9090:9090"           # Prometheus
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/mon:/lab/node:ro
+        - pki/out/mon:/lab/pki:ro
+        - state:/lab/state:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+    grafana:
+      # grafana/grafana, not grafana/grafana-oss: Grafana stopped updating the
+      # -oss repository with release 12.4.0 (see Part A.5 of the guide).
+      image: grafana/grafana:12.4.5
+      # Share mon's network namespace: Grafana listens on mon's addresses
+      # (10.10.99.20:3000) and talks to Prometheus on localhost:9090.
+      network-mode: container:mon
+      startup-delay: 10
+      env:
+        GF_SECURITY_ADMIN_USER: admin
+        GF_SECURITY_ADMIN_PASSWORD: ChangeMe-SecLab-1
+        GF_USERS_ALLOW_SIGN_UP: "false"
+        GF_ANALYTICS_REPORTING_ENABLED: "false"
+        GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+        GF_PLUGINS_PREINSTALL_DISABLED: "true"    # do not download plugins at start-up
+      binds:
+        - nodes/mon/grafana/provisioning:/etc/grafana/provisioning:ro
+        - nodes/mon/grafana/dashboards:/var/lib/grafana/dashboards:ro
+
+    # ------------------------------------------------ VLAN 10 users ---------
+    ws1:
+      image: seclab/client:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/ws:/lab/node:ro
+        - pki/out/ws:/lab/pki:ro
+      exec: [ "bash /lab/node/start.sh 11" ]
+
+    ws2:
+      image: seclab/client:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/ws:/lab/node:ro
+        - pki/out/ws:/lab/pki:ro
+      exec: [ "bash /lab/node/start.sh 12" ]
+
+    rogue:
+      image: seclab/attacker:1
+      network-mode: none
+      binds:
+        - nodes/common:/lab/common:ro
+        - nodes/rogue:/lab/node:ro
+        - tests/wordlists:/lab/wordlists:ro
+      exec: [ "bash /lab/node/start.sh" ]
+
+  links:
+    # simulated internet segment 203.0.113.0/24
+    - endpoints: [ "isp:eth1", "edge:eth1" ]
+    - endpoints: [ "isp:eth2", "attacker:eth1" ]
+    - endpoints: [ "isp:eth3", "remote:eth1" ]
+    # transit 10.10.0.0/30
+    - endpoints: [ "edge:eth2", "core:eth1" ]
+    # DMZ 10.10.30.0/24
+    - endpoints: [ "edge:eth3", "web:eth1" ]
+    # 802.1Q trunk (VLANs 10, 20, 99)
+    - endpoints: [ "core:eth2", "sw1:eth1" ]
+    # VLAN 10 users 10.10.10.0/24
+    - endpoints: [ "sw1:eth2", "ws1:eth1" ]
+    - endpoints: [ "sw1:eth3", "ws2:eth1" ]
+    - endpoints: [ "sw1:eth4", "rogue:eth1" ]
+    # VLAN 20 servers 10.10.20.0/24
+    - endpoints: [ "sw1:eth5", "app:eth1" ]
+    - endpoints: [ "sw1:eth6", "db:eth1" ]
+    # VLAN 99 management 10.10.99.0/24
+    - endpoints: [ "sw1:eth7", "bastion:eth1" ]
+    - endpoints: [ "sw1:eth8", "mon:eth1" ]
