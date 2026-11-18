@@ -153,7 +153,7 @@ topology:
       startup-delay: 10
       env:
         GF_SECURITY_ADMIN_USER: admin
-        GF_SECURITY_ADMIN_PASSWORD: ChangeMe-SecLab-1
+        GF_SECURITY_ADMIN_PASSWORD: grippygrpgripplers
         GF_USERS_ALLOW_SIGN_UP: "false"
         GF_ANALYTICS_REPORTING_ENABLED: "false"
         GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
