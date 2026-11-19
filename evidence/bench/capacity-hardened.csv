@@ -1,0 +1,11 @@
+label,keepalive,run,requests_per_second,mean_ms,p50_ms,p95_ms,p99_ms,failed
+hardened,no,1,1760.99,11.357,10,16,22,0
+hardened,no,2,1954.87,10.231,10,12,13,0
+hardened,no,3,1967.16,10.167,10,12,13,0
+hardened,no,4,1819.43,10.992,10,15,19,0
+hardened,no,5,1953.71,10.237,10,12,13,0
+hardened,yes,1,39623.31,0.505,0,1,3,0
+hardened,yes,2,41796.70,0.479,0,1,3,0
+hardened,yes,3,32796.92,0.610,0,1,2,0
+hardened,yes,4,36059.86,0.555,0,1,3,0
+hardened,yes,5,35533.24,0.563,0,1,3,0

@@ -1,0 +1,11 @@
+label,keepalive,run,requests_per_second,mean_ms,p50_ms,p95_ms,p99_ms,failed
+baseline,no,1,8104.30,2.468,2,3,4,0
+baseline,no,2,8074.76,2.477,2,3,4,0
+baseline,no,3,8413.80,2.377,2,3,3,0
+baseline,no,4,8422.61,2.375,2,3,4,0
+baseline,no,5,8640.65,2.315,2,2,3,0
+baseline,yes,1,27028.73,0.740,1,1,2,0
+baseline,yes,2,29863.52,0.670,1,1,2,0
+baseline,yes,3,32140.22,0.622,0,1,2,0
+baseline,yes,4,31878.27,0.627,1,1,2,0
+baseline,yes,5,34190.37,0.585,0,1,1,0

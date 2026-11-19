@@ -1,0 +1,45 @@
+This is ApacheBench, Version 2.3 <$Revision: 1903618 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking portal.seclab.test (be patient).....done
+
+
+Server Software:        nginx
+Server Hostname:        portal.seclab.test
+Server Port:            443
+SSL/TLS Protocol:       TLSv1.3,TLS_AES_256_GCM_SHA384,256,256
+Server Temp Key:        X25519 253 bits
+TLS Server Name:        portal.seclab.test
+
+Document Path:          /
+Document Length:        781 bytes
+
+Concurrency Level:      20
+Time taken for tests:   1.463 seconds
+Complete requests:      3000
+Failed requests:        0
+Total transferred:      3549000 bytes
+HTML transferred:       2343000 bytes
+Requests per second:    2051.22 [#/sec] (mean)
+Time per request:       9.750 [ms] (mean)
+Time per request:       0.488 [ms] (mean, across all concurrent requests)
+Transfer rate:          2369.72 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        1    6   2.1      5      26
+Processing:     1    4   2.1      4      24
+Waiting:        0    2   1.8      2      20
+Total:          3   10   3.3      9      34
+
+Percentage of the requests served within a certain time (ms)
+  50%      9
+  66%      9
+  75%     10
+  80%     10
+  90%     13
+  95%     16
+  98%     20
+  99%     28
+ 100%     34 (longest request)
