@@ -1,0 +1,39 @@
+id,type,description,outcome,expected,verdict
+F01,func,"OSPF adjacency edge<->core is Full",OK,OK,PASS
+F02,func,"core learned the default route through OSPF",OK,OK,PASS
+F03,func,"edge learned the three VLAN subnets through OSPF",OK,OK,PASS
+F04,func,"workstation reaches its default gateway",OK,OK,PASS
+F05,func,"workstation reaches a site on the internet",OK,OK,PASS
+F06,func,"NAT: internet site sees the edge's public address",OK,OK,PASS
+V01,func,"VLAN isolation: rogue cannot reach VLAN 20 at Layer 2",OK,OK,PASS
+F07,func,"customer on the internet gets the portal page",OK,OK,PASS
+F08,func,"portal -> API -> database chain returns data",OK,OK,PASS
+F09,func,"staff workstation reaches the portal",OK,OK,PASS
+F10,func,"VPN tunnel has completed a handshake",OK,OK,PASS
+F11,func,"admin reaches the bastion through the VPN (key)",OK,OK,PASS
+F12,func,"admin reaches the database host via ProxyJump",OK,OK,PASS
+F13,func,"all 7 Prometheus scrape targets are up",OK,OK,PASS
+G01,func,"Grafana has the Prometheus source and the dashboard",OK,OK,PASS
+A01,attack,"internet: SSH service reachable (203.0.113.1:2222)",EXPOSED,EXPOSED,PASS
+A02,attack,"internet: database port reachable (203.0.113.1:5432)",EXPOSED,EXPOSED,PASS
+A03,attack,"internet: routed straight to internal DB via edge",EXPOSED,EXPOSED,PASS
+A04,attack,"internet: hydra guesses an SSH password",EXPOSED,EXPOSED,PASS
+A05,attack,"internet: portal answers over clear-text HTTP",EXPOSED,EXPOSED,PASS
+A06,attack,"internet: directory listing reveals files",EXPOSED,EXPOSED,PASS
+A07,attack,"internet: web server discloses its version",EXPOSED,EXPOSED,PASS
+A08,attack,"rogue device: database port reachable",EXPOSED,EXPOSED,PASS
+A09,attack,"rogue device: reads customer table (weak password)",EXPOSED,EXPOSED,PASS
+A10,attack,"rogue device: calls the application API directly",EXPOSED,EXPOSED,PASS
+A11,attack,"rogue device: bastion SSH port reachable",EXPOSED,EXPOSED,PASS
+A12,attack,"rogue device: router management (SSH) reachable",EXPOSED,EXPOSED,PASS
+A13,attack,"compromised web server: outbound connection (C2 path)",EXPOSED,EXPOSED,PASS
+A14,attack,"compromised web server: database port reachable",EXPOSED,EXPOSED,PASS
+A15,attack,"compromised app server: reaches the internet",EXPOSED,EXPOSED,PASS
+A16,attack,"API answers a caller with no client certificate",EXPOSED,EXPOSED,PASS
+A17,attack,"bastion accepts a password login",EXPOSED,EXPOSED,PASS
+A18,attack,"bastion relays to an arbitrary internal port",EXPOSED,EXPOSED,PASS
+A19,attack,"on-path capture shows customer data in clear text",EXPOSED,EXPOSED,PASS
+D01,func,"IDS (edge) alerts on an external port scan",OK,OK,PASS
+D02,func,"IDS (core) alerts on lateral movement from VLAN 10",OK,OK,PASS
+D03,func,"IDS (edge) recognises the Nikto web scanner",OK,OK,PASS
+D05,func,"Prometheus alert IntrusionDetected is firing",OK,OK,PASS

@@ -1,0 +1,11 @@
+lo               UNKNOWN        127.0.0.1/8 
+wg0              UNKNOWN        10.10.200.2/24 
+eth1@if392       UP             203.0.113.50/24 
+
+10.10.99.0/24 dev wg0 scope link 
+10.10.200.0/24 dev wg0 proto kernel scope link src 10.10.200.2 
+203.0.113.0/24 dev eth1 proto kernel scope link src 203.0.113.50 
+
+udp 0.0.0.0:59456 
+udp [::]:59456 
+tcp 0.0.0.0:80 users:(("python3",pid=899,fd=3))

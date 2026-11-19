@@ -1,0 +1,20 @@
+lo               UNKNOWN        127.0.0.1/8 10.255.0.2/32 
+eth2.10@eth2     UP             10.10.10.1/24 
+eth2.20@eth2     UP             10.10.20.1/24 
+eth2.99@eth2     UP             10.10.99.1/24 
+eth2@if370       UP             
+eth1@if386       UP             10.10.0.2/30 
+
+default nhid 20 via 10.10.0.1 dev eth1 proto ospf metric 20 
+10.10.0.0/30 dev eth1 proto kernel scope link src 10.10.0.2 
+10.10.10.0/24 dev eth2.10 proto kernel scope link src 10.10.10.1 
+10.10.20.0/24 dev eth2.20 proto kernel scope link src 10.10.20.1 
+10.10.30.0/24 nhid 20 via 10.10.0.1 dev eth1 proto ospf metric 20 
+10.10.99.0/24 dev eth2.99 proto kernel scope link src 10.10.99.1 
+10.10.200.0/24 nhid 20 via 10.10.0.1 dev eth1 proto ospf metric 20 
+
+tcp 0.0.0.0:22 users:(("sshd",pid=85,fd=3))
+tcp 127.0.0.1:2601 users:(("zebra",pid=63,fd=26))
+tcp 127.0.0.1:2604 users:(("ospfd",pid=68,fd=11))
+tcp 127.0.0.1:2616 users:(("staticd",pid=71,fd=11))
+tcp *:9100 users:(("prometheus-node",pid=89,fd=3))

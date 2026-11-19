@@ -1,0 +1,51 @@
+id,type,description,outcome,expected,verdict
+F01,func,"OSPF adjacency edge<->core is Full",OK,OK,PASS
+F02,func,"core learned the default route through OSPF",OK,OK,PASS
+F03,func,"edge learned the three VLAN subnets through OSPF",OK,OK,PASS
+F04,func,"workstation reaches its default gateway",OK,OK,PASS
+F05,func,"workstation reaches a site on the internet",OK,OK,PASS
+F06,func,"NAT: internet site sees the edge's public address",OK,OK,PASS
+V01,func,"VLAN isolation: rogue cannot reach VLAN 20 at Layer 2",OK,OK,PASS
+F07,func,"customer on the internet gets the portal page",OK,OK,PASS
+F08,func,"portal -> API -> database chain returns data",OK,OK,PASS
+F09,func,"staff workstation reaches the portal",OK,OK,PASS
+F10,func,"VPN tunnel has completed a handshake",OK,OK,PASS
+F11,func,"admin reaches the bastion through the VPN (key)",OK,OK,PASS
+F12,func,"admin reaches the database host via ProxyJump",OK,OK,PASS
+F13,func,"all 7 Prometheus scrape targets are up",OK,OK,PASS
+G01,func,"Grafana has the Prometheus source and the dashboard",BROKEN,OK,FAIL
+A01,attack,"internet: SSH service reachable (203.0.113.1:2222)",PROTECTED,PROTECTED,PASS
+A02,attack,"internet: database port reachable (203.0.113.1:5432)",PROTECTED,PROTECTED,PASS
+A03,attack,"internet: routed straight to internal DB via edge",PROTECTED,PROTECTED,PASS
+A04,attack,"internet: hydra guesses an SSH password",PROTECTED,PROTECTED,PASS
+A05,attack,"internet: portal answers over clear-text HTTP",PROTECTED,PROTECTED,PASS
+A06,attack,"internet: directory listing reveals files",PROTECTED,PROTECTED,PASS
+A07,attack,"internet: web server discloses its version",PROTECTED,PROTECTED,PASS
+A08,attack,"rogue device: database port reachable",PROTECTED,PROTECTED,PASS
+A09,attack,"rogue device: reads customer table (weak password)",PROTECTED,PROTECTED,PASS
+A10,attack,"rogue device: calls the application API directly",PROTECTED,PROTECTED,PASS
+A11,attack,"rogue device: bastion SSH port reachable",PROTECTED,PROTECTED,PASS
+A12,attack,"rogue device: router management (SSH) reachable",PROTECTED,PROTECTED,PASS
+A13,attack,"compromised web server: outbound connection (C2 path)",PROTECTED,PROTECTED,PASS
+A14,attack,"compromised web server: database port reachable",PROTECTED,PROTECTED,PASS
+A15,attack,"compromised app server: reaches the internet",PROTECTED,PROTECTED,PASS
+A16,attack,"API answers a caller with no client certificate",PROTECTED,PROTECTED,PASS
+A17,attack,"bastion accepts a password login",PROTECTED,PROTECTED,PASS
+A18,attack,"bastion relays to an arbitrary internal port",PROTECTED,PROTECTED,PASS
+A19,attack,"on-path capture shows customer data in clear text",PROTECTED,PROTECTED,PASS
+C01,ctrl,"portal certificate chains to the lab root CA",OK,OK,PASS
+C02,ctrl,"HTTP is redirected to HTTPS (301)",OK,OK,PASS
+C03,ctrl,"TLS 1.1 handshake is refused",OK,OK,PASS
+C04,ctrl,"HSTS and anti-sniffing headers are sent",OK,OK,PASS
+C05,ctrl,"API request was authenticated with a client cert",OK,OK,PASS
+C06,ctrl,"database session is encrypted (TLS 1.3)",OK,OK,PASS
+C07,ctrl,"OSPF adjacency uses MD5 authentication",OK,OK,PASS
+C08,ctrl,"forged source address is dropped and counted (core)",OK,OK,PASS
+C09,ctrl,"rate limit answers a request flood with 503",OK,OK,PASS
+C10,ctrl,"fail2ban banned the address after repeated failures",OK,OK,PASS
+C11,ctrl,"banned address can no longer open SSH",OK,OK,PASS
+D01,func,"IDS (edge) alerts on an external port scan",OK,OK,PASS
+D02,func,"IDS (core) alerts on lateral movement from VLAN 10",OK,OK,PASS
+D03,func,"IDS (edge) recognises the Nikto web scanner",OK,OK,PASS
+D04,ctrl,"edge firewall counted the scan as dropped packets",OK,OK,PASS
+D05,func,"Prometheus alert IntrusionDetected is firing",OK,OK,PASS

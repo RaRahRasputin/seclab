@@ -1,0 +1,11 @@
+running (pid 100) on eth2.10
+11/19/2026-06:04:59.763791  [**] [1:1000006:1] SECLAB R6 Users-zone host probing servers or management [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:60654 -> 10.10.20.20:5432
+11/19/2026-06:04:59.763791  [**] [1:1000007:1] SECLAB R7 PostgreSQL connection attempt from non-application host [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:60654 -> 10.10.20.20:5432
+11/19/2026-06:05:56.324905  [**] [1:1000006:1] SECLAB R6 Users-zone host probing servers or management [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:58465 -> 10.10.99.10:443
+11/19/2026-06:05:56.325375  [**] [1:1000007:1] SECLAB R7 PostgreSQL connection attempt from non-application host [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:58465 -> 10.10.99.10:5432
+11/19/2026-06:05:57.829062  [**] [1:1000002:1] SECLAB R2 SSH connection burst - possible brute force [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 10.10.10.66:58467 -> 10.10.20.20:22
+11/19/2026-06:08:53.253942  [**] [1:1000006:1] SECLAB R6 Users-zone host probing servers or management [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:56566 -> 10.10.20.20:5432
+11/19/2026-06:08:53.253942  [**] [1:1000007:1] SECLAB R7 PostgreSQL connection attempt from non-application host [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:56566 -> 10.10.20.20:5432
+11/19/2026-06:09:42.949917  [**] [1:1000006:1] SECLAB R6 Users-zone host probing servers or management [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:55859 -> 10.10.99.10:22
+11/19/2026-06:09:44.454470  [**] [1:1000002:1] SECLAB R2 SSH connection burst - possible brute force [**] [Classification: Attempted Administrator Privilege Gain] [Priority: 1] {TCP} 10.10.10.66:55861 -> 10.10.20.20:22
+11/19/2026-06:09:44.954509  [**] [1:1000007:1] SECLAB R7 PostgreSQL connection attempt from non-application host [**] [Classification: Potential Corporate Privacy Violation] [Priority: 1] {TCP} 10.10.10.66:55859 -> 10.10.99.10:5432

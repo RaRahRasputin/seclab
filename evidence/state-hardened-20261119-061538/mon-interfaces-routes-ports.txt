@@ -1,0 +1,16 @@
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth0@if366       UP             172.31.255.2/24 fe80::40b3:3bff:feda:ef1a/64 
+eth1@if367       UP             10.10.99.20/24 fe80::a8c1:abff:fee8:142b/64 
+
+default via 172.31.255.1 dev eth0 
+10.10.0.0/16 via 10.10.99.1 dev eth1 
+10.10.99.0/24 dev eth1 proto kernel scope link src 10.10.99.20 
+172.31.255.0/24 dev eth0 proto kernel scope link src 172.31.255.2 
+
+udp 127.0.0.11:56225 
+tcp 127.0.0.11:33857 
+tcp 127.0.0.1:9115 users:(("prometheus-blac",pid=917,fd=3))
+tcp 0.0.0.0:22 users:(("sshd",pid=912,fd=3))
+tcp *:3000 
+tcp *:9100 users:(("prometheus-node",pid=916,fd=3))
+tcp *:9090 users:(("prometheus",pid=919,fd=7))
